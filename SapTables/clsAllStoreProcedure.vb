@@ -200,7 +200,20 @@ Public Class clsAllStoreProcedure
             strProcedureBody = "@ID varchar(30) as Select SubjectName,AVID,TransType,FileData from FBNPC_Audio_video_master where AVID=@ID"
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Edit_Audio_Video_Master", strProcedureBody)
 
-            strProcedureBody = "@ID varchar(30) as select case when classoption=1 then 'NCLEX' when classoption=2 then 'CPNRE' when classoption=3 then 'IELTS' when classoption=4 then 'CELBAN' when classoption=5 then 'OTHERS' end as ClassType,* from FBNPC_Registration where FirstName like '%' + @ID + '%' "
+            strProcedureBody = " @ID varchar(30),@FromDate varchar(10),@ToDate varchar(10),@DocType varchar(10) as 
+                        if (@DocType='not')
+                            begin
+                    select case when classoption=1 then 'NCLEX' when classoption=2 then 'CPNRE' when classoption=3 then 'IELTS' when classoption=4 then 'CELBAN' when classoption=5 
+                    then 'OTHERS' end as ClassType,* from FBNPC_Registration 
+                    where FirstName like '%' + @ID + '%' 
+                            end
+                        else
+                            begin
+                        select case when classoption=1 then 'NCLEX' when classoption=2 then 'CPNRE' when classoption=3 then 'IELTS' when classoption=4 then 'CELBAN' when classoption=5 
+                then 'OTHERS' end as ClassType,* from FBNPC_Registration 
+                where FirstName like '%' + @ID + '%' 
+            and (CreatedDate>=@FromDate ) and (CreatedDate<=@ToDate ) 
+                            end"
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_SearchList", strProcedureBody)
 
             strProcedureBody = "@ExamID varchar(30) as select * from FBNPC_ExamListName"
@@ -477,6 +490,87 @@ where FBNPC_Exam_Student_Mapping_Head.studentname=@ID and FBNPC_Paper_Set_Head.e
 
             strProcedureBody = "@ID varchar(30) as select case when isactive=1 then 'Visible' else 'Not Visible' end as Active,* from FBNPC_Category_Master "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Category_Bind", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_Achiever_Master "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_Bind", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_Achiever_Master where AchieverId=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_Select", strProcedureBody)
+
+            strProcedureBody = " @AchieverID varchar(15),@FirstName varchar(30),@LastName varchar(30),@City varchar(20),@Country varchar(20),@OnLandingPage integer,@Desc text,@ISActive varchar(10),@FileName varchar(50),@FileType varchar(50),@FileData varbinary(max),@CreatedBy varchar(20),@ModifyBy varchar(20) " &
+              "As BEGIN if not exists (select * from KSCN_Achiever_Master where AchieverID=@AchieverID) BEGIN insert into KSCN_Achiever_Master (AchieverID,FirstName,LastName,City,Country,OnLandingPage,Description,Isactive,FileName,FileData,FileType,CreatedBy,ModifyBy,CreatedDate,ModifyDate) " &
+            " values(@AchieverID,@FirstName,@Lastname,@City,@Country,@OnLandingPage,@Desc,@ISActive,@FileName,@FileData,@FileType,@CreatedBy,@ModifyBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00')) " &
+            " end else begin update KSCN_Achiever_Master set FirstName=@FirstName,Lastname=@LastName,Description=@Desc,ModifyBy=@ModifyBy,ModifyDate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00') where AchieverID=@AchieverID end end "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_Insert", strProcedureBody)
+
+            strProcedureBody = "@Title varchar(20),@Desc text,@ISActive varchar(10),@PicType varchar(500),@PicData varbinary(max),@PicName varchar(500),@CreatedBy varchar(20),@ModifyBy varchar(20),@DocType varchar(10),@ID varchar(10),@ImageID varchar(5),@Country varchar(20),@State varchar(20),@City varchar(20) " &
+                "As BEGIN if not exists (select * from FBNPC_Programs_Insert where ProgramsID=@ID) 
+   begin insert into FBNPC_Programs_Insert (titleName,TitleDescription,IsActive,filetype,filedata,filename,CreatedBy,CreatedDate,ModifyBy,ModifyDate,Type,Country,State,City)
+values(@Title,@Desc,@ISActive,@pictype,@picdata,@picname,@CreatedBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),@ModifyBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),@DocType,@Country,@State,@City)
+end
+else
+if (@imageID='1')
+begin
+update FBNPC_Programs_Insert set TitleName=@Title,TitleDescription=@Desc,IsActive=@ISActive,filename=@picname,filetype=@pictype,filedata=@picdata,ModifyBy=@ModifyBy,ModifyDate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),Country=@Country,State=@State,City=@City where ProgramsID=@ID
+end
+else
+begin
+update FBNPC_Programs_Insert set TitleName=@Title,TitleDescription=@Desc,IsActive=@ISActive,ModifyBy=@ModifyBy,ModifyDate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),Country=@Country,State=@State,City=@City where ProgramsID=@ID
+end END "
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_Our_Programs_Insert", strProcedureBody)
+
+
+            strProcedureBody = "@CountryID varchar(20),@Name varchar(200) " &
+" as BEGIN if not exists (select * from KSCN_Country_Master where CountryID=@CountryID) begin insert into KSCN_Country_Master (CountryID,Name) " &
+" values(@CountryID,@Name) " &
+           " End  else  begin update KSCN_Country_Master set Name=@Name where CountryID=@CountryID End  End "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Country_Insert", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as  select * from kscn_country_master "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Country_Bind", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from kscn_country_master where CountryID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Country_Select", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as delete from KSCN_City_Master where CountryID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Country_Delete", strProcedureBody)
+
+            strProcedureBody = "@CountryID varchar(20),@Name varchar(200),@StateID varchar(20) " &
+" as BEGIN if not exists (select * from KSCN_State_Master where StateID=@StateID) begin insert into KSCN_State_Master (StateID,CountryID,Name) " &
+" values(@StateID,@CountryID,@Name) " &
+           " End  else  begin update KSCN_State_Master set Name=@Name,CountryID=@CountryID where StateID=@StateID End  End "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_State_Insert", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_State_Master "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_State_Bind", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_State_Master where StateID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_State_Select", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as delete from KSCN_State_Master where StateID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_State_Delete", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_State_Master where CountryID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_State_Country_Wise", strProcedureBody)
+
+            strProcedureBody = "@CityID varchar(20),@CountryID varchar(20),@Name varchar(200),@StateID varchar(20) " &
+" as BEGIN if not exists (select * from KSCN_City_Master where CityID=@CityID) begin insert into KSCN_City_Master (CityID,StateID,CountryID,Name) " &
+" values(@CityID,@StateID,@CountryID,@Name) " &
+           " End  else  begin update KSCN_City_Master set Name=@Name,CountryID=@CountryID,StateID=@StateID where CityID=@CityID End  End "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_City_Insert", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_City_Master "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_City_Bind", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_City_Master where CityID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_City_Select", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as delete from KSCN_City_Master where CityID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_City_Delete", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select * from KSCN_City_Master where StateID=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_City_State_Wise", strProcedureBody)
+
 
             clsCommon.ProgressBarHide()
         Catch ex As Exception
