@@ -1,4 +1,4 @@
-﻿'=============BM00000007908================
+﻿
 Imports common
 Imports System.Data.SqlClient
 Imports System.IO
@@ -336,6 +336,7 @@ Public Class clsCreateAllTables
             coll.Add("PaperID", "VARCHAR(30) not null REFERENCES FBNPC_Paper_Set_Head(PaperID)")
             coll.Add("CreatedDate", "datetime null")
             coll.Add("ModifyDate", "datetime null")
+            coll.Add("DocType", "varchar(20) null ")
             clsCommonFunctionality.CreateOrAlterTable("FBNPC_Submit_Exam", coll)
 
 

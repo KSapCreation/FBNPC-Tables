@@ -84,9 +84,9 @@ Public Class clsAllStoreProcedure
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_TearmsCondition_Insert", strProcedureBody)
 
 
-            strProcedureBody = " @OptionA integer,@OptionB integer,@OptionC integer,@OptionD integer,@QuestionID varchar(30),@ExamName varchar(30),@StudentName varchar(30),@PaperID varchar(30) " & _
-           "As BEGIN insert into FBNPC_Submit_Exam (OptionA,OptionB,OptionC,OptionD,QuestionID,ExamName,StudentName,PaperID,CreatedDate,ModifyDate) " & _
-         " values(@OptionA,@OptionB,@OptionC,@OptionD,@QuestionID,@ExamName,@StudentName,@PaperID,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00')) " & _
+            strProcedureBody = " @OptionA integer,@OptionB integer,@OptionC integer,@OptionD integer,@QuestionID varchar(30),@ExamName varchar(30),@StudentName varchar(30),@PaperID varchar(30),@DocType varchar(20) " &
+           "As BEGIN insert into FBNPC_Submit_Exam (OptionA,OptionB,OptionC,OptionD,QuestionID,ExamName,StudentName,PaperID,CreatedDate,ModifyDate,DocType) " &
+         " values(@OptionA,@OptionB,@OptionC,@OptionD,@QuestionID,@ExamName,@StudentName,@PaperID,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),@DocType) " &
          " end "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Submit_Exam_Insert", strProcedureBody)
 
