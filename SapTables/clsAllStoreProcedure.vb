@@ -336,9 +336,10 @@ where FBNPC_PAPER_SET_DETAIL.examid=@ID and FBNPC_PAPER_SET_DETAIL.PaperID not i
             strProcedureBody = "@ID varchar(20) as select Password from FBNPC_USER_MASTER where First_Name=@ID"
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_LoginDetail_Find", strProcedureBody)
 
-            strProcedureBody = "@ID varchar(30),@StudentName varchar(20),@ExamName varchar(20) as select FBNPC_QUSTIONSSHEET.Question,case when FBNPC_SUBMIT_EXAM.OptionA=1 then 'A' else case when OptionB=1 then 'B' else case when FBNPC_SUBMIT_EXAM.OptionC=1 then 'C' else case when FBNPC_SUBMIT_EXAM.OptionD=1 then 'D' end end end end as StudentANS"
+            strProcedureBody = "@ID varchar(30),@StudentName varchar(20),@ExamName varchar(20),@DocType varchar(20) as select FBNPC_QUSTIONSSHEET.Question,case when FBNPC_SUBMIT_EXAM.OptionA=1 then 'A' else case when OptionB=1 then 'B' else case when FBNPC_SUBMIT_EXAM.OptionC=1 then 'C' else case when FBNPC_SUBMIT_EXAM.OptionD=1 then 'D' end end end end as StudentANS"
             strProcedureBody += " ,FBNPC_QUSTIONSSHEET.correctAns as [Correct ANS]  from FBNPC_SUBMIT_EXAM left outer join FBNPC_QUSTIONSSHEET on FBNPC_QUSTIONSSHEET.QuestionID=FBNPC_SUBMIT_EXAM.QuestionID"
             strProcedureBody += " where studentname = @StudentName and (FBNPC_QUSTIONSSHEET.Question like '%' + @ID + '%' or isnull(FBNPC_QUSTIONSSHEET.Question,'')='') and (FBNPC_SUBMIT_EXAM.ExamName=@ExamName or isnull(FBNPC_SUBMIT_EXAM.ExamName,'')='')"
+            strProcedureBody += " and (FBNPC_SUBMIT_EXAM.DocType=@DocType  or isnull(FBNPC_SUBMIT_EXAM.DocType,'')='')"
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Student_Search_Questions", strProcedureBody)
 
             strProcedureBody = "@ID varchar(20) as select  'Right' as SectionName,sum(finalresult.FinalAns) as finalans from (select *,case when StudentANS=[Correct ANS] then 1 else 0 end FinalAns,case when StudentANS<>[Correct ANS] then 1 else 0 end WrongAns from (select  FBNPC_SUBMIT_EXAM.studentname,FBNPC_PAPER_SET_HEAD.Section,FBNPC_SECTIONS.SectionName,FBNPC_QUSTIONSSHEET.Question,case when FBNPC_SUBMIT_EXAM.OptionA=1 then 'A' else case when OptionB=1 then 'B' else case when FBNPC_SUBMIT_EXAM.OptionC=1 then 'C' else case when FBNPC_SUBMIT_EXAM.OptionD=1 then 'D' end end end end as StudentANS"
@@ -571,6 +572,26 @@ end END "
             strProcedureBody = "@ID varchar(20) as select * from KSCN_City_Master where StateID=@ID "
             clsCommonFunctionality.CreateStoreProcedure("KSCN_City_State_Wise", strProcedureBody)
 
+            strProcedureBody = "@ID varchar(20) as select  'Right' as SectionName,sum(finalresult.FinalAns) as finalans from (select *,case when StudentANS=[Correct ANS] then 1 else 0 end FinalAns,case when StudentANS<>[Correct ANS] then 1 else 0 end WrongAns from (select  FBNPC_SUBMIT_EXAM.studentname,FBNPC_PAPER_SET_HEAD.Section,FBNPC_SECTIONS.SectionName,FBNPC_QUSTIONSSHEET.Question,case when FBNPC_SUBMIT_EXAM.OptionA=1 then 'A' else case when OptionB=1 then 'B' else case when FBNPC_SUBMIT_EXAM.OptionC=1 then 'C' else case when FBNPC_SUBMIT_EXAM.OptionD=1 then 'D' end end end end as StudentANS"
+            strProcedureBody += "  ,FBNPC_QUSTIONSSHEET.correctAns as [Correct ANS]  "
+            strProcedureBody += " from FBNPC_SUBMIT_EXAM"
+            strProcedureBody += " left outer join FBNPC_QUSTIONSSHEET on FBNPC_QUSTIONSSHEET.QuestionID=FBNPC_SUBMIT_EXAM.QuestionID"
+            strProcedureBody += " 			left outer join FBNPC_PAPER_SET_HEAD on FBNPC_PAPER_SET_HEAD.PaperID=FBNPC_SUBMIT_EXAM.PaperID"
+            strProcedureBody += " left outer join FBNPC_SECTIONS on FBNPC_SECTIONS.SectionID=FBNPC_PAPER_SET_HEAD.Section"
+            strProcedureBody += " 			)xx"
+            strProcedureBody += " where xx.studentname = @ID and xx.sectionName='Individual' ) finalresult"
+            strProcedureBody += " group by finalresult.studentname,finalresult.SectionName"
+            strProcedureBody += " union all"
+            strProcedureBody += " select 'Wrong' as SectionName,sum(finalresult.WrongAns) as WrongAns  from (select *,case when StudentANS=[Correct ANS] then 1 else 0 end FinalAns,case when StudentANS<>[Correct ANS] then 1 else 0 end WrongAns from (select  FBNPC_SUBMIT_EXAM.studentname,FBNPC_PAPER_SET_HEAD.Section,FBNPC_SECTIONS.SectionName,FBNPC_QUSTIONSSHEET.Question,case when FBNPC_SUBMIT_EXAM.OptionA=1 then 'A' else case when OptionB=1 then 'B' else case when FBNPC_SUBMIT_EXAM.OptionC=1 then 'C' else case when FBNPC_SUBMIT_EXAM.OptionD=1 then 'D' end end end end as StudentANS"
+            strProcedureBody += " ,FBNPC_QUSTIONSSHEET.correctAns as [Correct ANS]  "
+            strProcedureBody += " from FBNPC_SUBMIT_EXAM"
+            strProcedureBody += " left outer join FBNPC_QUSTIONSSHEET on FBNPC_QUSTIONSSHEET.QuestionID=FBNPC_SUBMIT_EXAM.QuestionID"
+            strProcedureBody += " left outer join FBNPC_PAPER_SET_HEAD on FBNPC_PAPER_SET_HEAD.PaperID=FBNPC_SUBMIT_EXAM.PaperID"
+            strProcedureBody += " left outer join FBNPC_SECTIONS on FBNPC_SECTIONS.SectionID=FBNPC_PAPER_SET_HEAD.Section"
+            strProcedureBody += " 			)xx"
+            strProcedureBody += " where xx.studentname = @ID and xx.sectionName='Individual') finalresult"
+            strProcedureBody += " group by finalresult.studentname,finalresult.SectionName"
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_Student_DashboardScore_Board_Individual", strProcedureBody)
 
             clsCommon.ProgressBarHide()
         Catch ex As Exception

@@ -1,4 +1,4 @@
-﻿'=======BM00000006910=============BM00000007011======BM00000007858==========
+﻿
 Imports common
 Imports System.Data.SqlClient
 
