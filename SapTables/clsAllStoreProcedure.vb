@@ -90,6 +90,12 @@ Public Class clsAllStoreProcedure
          " end "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Submit_Exam_Insert", strProcedureBody)
 
+            strProcedureBody = " @OptionA integer,@OptionB integer,@OptionC integer,@OptionD integer,@QuestionID varchar(30),@ExamName varchar(30),@StudentName varchar(30),@PaperID varchar(30),@DocType varchar(20),@QusNo varchar(20) " &
+           "As BEGIN if not exists (select * from KSCN_Temp_Table_Exam where QuestionID=@QuestionID and ExamName=@ExamName and StudentName=@StudentName) BEGIN insert into KSCN_Temp_Table_Exam (OptionA,OptionB,OptionC,OptionD,QuestionID,ExamName,StudentName,PaperID,CreatedDate,ModifyDate,DocType,QusNo) " &
+         " values(@OptionA,@OptionB,@OptionC,@OptionD,@QuestionID,@ExamName,@StudentName,@PaperID,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),@DocType,@QusNo) " &
+         " end else begin update KSCN_Temp_Table_Exam set OptionA=@OptionA,OptionB=@OptionB,OptionC=@OptionC,OptionD=@OptionD where QuestionID=@QuestionID and ExamName=@ExamName and StudentName=@StudentName end end "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Temp_Exam_Insert", strProcedureBody)
+
 
             strProcedureBody = " @UpdateID varchar(15),@StudentName varchar(20),@Desc varchar(max),@CreatedBy varchar(20),@ModifyBy varchar(20) " & _
            "As BEGIN if not exists (select * from FBNPC_Updates where UpdatesID=@UpdateID) BEGIN insert into FBNPC_Updates (UpdatesID,StudentName,Description,CreatedBy,ModifyBy,CreatedDate,ModifyDate) " & _
@@ -319,6 +325,14 @@ where FBNPC_PAPER_SET_DETAIL.examid=@ID and FBNPC_PAPER_SET_DETAIL.PaperID not i
             strProcedureBody += "  where FBNPC_EXAM_STUDENT_MAPPING_HEAD.StudentName=@ID and fbnpc_sections.doctype ='Individual' "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Exam_Student_Mapping_Select_Individual", strProcedureBody)
 
+            strProcedureBody = "@ID varchar(20),@DocType varchar(20) as select distinct ExamCode,FBNPC_EXAMLISTNAME.ExamName,FBNPC_EXAMLISTNAME.Description as [Exam Description],FBNPC_USER_MASTER.First_NAME,fbnpc_sections.doctype  from FBNPC_EXAM_STUDENT_MAPPING_HEAD"
+            strProcedureBody += " inner join  FBNPC_EXAM_STUDENT_MAPPING_DETAIL on FBNPC_EXAM_STUDENT_MAPPING_DETAIL.ESM_Code=FBNPC_EXAM_STUDENT_MAPPING_head.ESM_Code"
+            strProcedureBody += " inner join FBNPC_EXAMLISTNAME on FBNPC_EXAMLISTNAME.ExamID=FBNPC_EXAM_STUDENT_MAPPING_DETAIL.ExamCode"
+            strProcedureBody += "   inner join FBNPC_USER_MASTER on FBNPC_USER_MASTER.USER_CODE=FBNPC_EXAM_STUDENT_MAPPING_head.studentname"
+            strProcedureBody += "   inner join FBNPC_PAPER_SET_HEAD on FBNPC_PAPER_SET_HEAD.examid=FBNPC_EXAMLISTNAME.ExamID "
+            strProcedureBody += "  inner join fbnpc_sections on fbnpc_sections.sectionID=FBNPC_PAPER_SET_HEAD.section "
+            strProcedureBody += "  where FBNPC_EXAM_STUDENT_MAPPING_HEAD.StudentName=@ID and fbnpc_sections.doctype =@DocType "
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_Exam_Bind_For_Result", strProcedureBody)
 
             'strProcedureBody = "@ID varchar(20) as select ROW_NUMBER() OVER(ORDER BY FBNPC_EXAM_STUDENT_MAPPING_HEAD.ESM_Code ASC) AS num,FBNPC_EXAM_STUDENT_MAPPING_HEAD.ESM_Code,StudentName,ExamCode,FBNPC_EXAMLISTNAME.ExamName,FBNPC_EXAMLISTNAME.Description as [Exam Description],FBNPC_USER_MASTER.First_NAME from FBNPC_EXAM_STUDENT_MAPPING_HEAD"
             'strProcedureBody += " inner join  FBNPC_EXAM_STUDENT_MAPPING_DETAIL on FBNPC_EXAM_STUDENT_MAPPING_DETAIL.ESM_Code=FBNPC_EXAM_STUDENT_MAPPING_head.ESM_Code"
@@ -492,13 +506,23 @@ where FBNPC_Exam_Student_Mapping_Head.studentname=@ID and FBNPC_Paper_Set_Head.e
             strProcedureBody = "@ID varchar(30) as select case when isactive=1 then 'Visible' else 'Not Visible' end as Active,* from FBNPC_Category_Master "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Category_Bind", strProcedureBody)
 
-            strProcedureBody = "@ID varchar(20) as select * from KSCN_Achiever_Master "
+            strProcedureBody = "@ID varchar(20) as select *,KSCN_City_master.Name as CityName,KSCN_COuntry_master.Name as CountryName from KSCN_Achiever_master
+left join KSCN_COuntry_master on KSCN_COuntry_master.CountryID=KSCN_Achiever_master.Country
+left join KSCN_City_master on KSCN_City_master.CityID=KSCN_Achiever_master.City "
             clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_Bind", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(20) as select *,KSCN_City_master.Name as CityName,KSCN_COuntry_master.Name as CountryName from KSCN_Achiever_master
+left join KSCN_COuntry_master on KSCN_COuntry_master.CountryID=KSCN_Achiever_master.Country
+left join KSCN_City_master on KSCN_City_master.CityID=KSCN_Achiever_master.City where 2=2 and DocType=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_DocType", strProcedureBody)
 
             strProcedureBody = "@ID varchar(20) as select * from KSCN_Achiever_Master where AchieverId=@ID "
             clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_Select", strProcedureBody)
 
-            strProcedureBody = " @AchieverID varchar(15),@FirstName varchar(30),@LastName varchar(30),@City varchar(20),@Country varchar(20),@OnLandingPage integer,@Desc text,@ISActive varchar(10),@FileName varchar(50),@FileType varchar(50),@FileData varbinary(max),@CreatedBy varchar(20),@ModifyBy varchar(20) " &
+            strProcedureBody = "@ID varchar(20) as delete from KSCN_Achiever_Master where AchieverId=@ID "
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Achiever_Delete", strProcedureBody)
+
+            strProcedureBody = " @AchieverID varchar(15),@FirstName varchar(30),@LastName varchar(30),@City varchar(20),@Country varchar(20),@OnLandingPage integer,@Desc text,@ISActive varchar(10),@FileName varchar(50),@FileType varchar(50),@FileData varbinary(max),@CreatedBy varchar(30),@ModifyBy varchar(30) " &
               "As BEGIN if not exists (select * from KSCN_Achiever_Master where AchieverID=@AchieverID) BEGIN insert into KSCN_Achiever_Master (AchieverID,FirstName,LastName,City,Country,OnLandingPage,Description,Isactive,FileName,FileData,FileType,CreatedBy,ModifyBy,CreatedDate,ModifyDate) " &
             " values(@AchieverID,@FirstName,@Lastname,@City,@Country,@OnLandingPage,@Desc,@ISActive,@FileName,@FileData,@FileType,@CreatedBy,@ModifyBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00')) " &
             " end else begin update KSCN_Achiever_Master set FirstName=@FirstName,Lastname=@LastName,Description=@Desc,ModifyBy=@ModifyBy,ModifyDate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00') where AchieverID=@AchieverID end end "
@@ -592,6 +616,85 @@ end END "
             strProcedureBody += " where xx.studentname = @ID and xx.sectionName='Individual') finalresult"
             strProcedureBody += " group by finalresult.studentname,finalresult.SectionName"
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Student_DashboardScore_Board_Individual", strProcedureBody)
+
+            strProcedureBody = " 
+@GalleryID varchar(20),
+@CompanyName varchar(60),
+@category varchar(20),
+@GalleryType varchar(10),
+@Name varchar(30),
+@Desc varchar(max),
+@FileName varchar(50),
+@FileType varchar(50),
+@FileData varbinary(max),
+@ModifyBy varchar(10),
+@CreatedBy varchar(10),
+@ISActive varchar(10),
+@ImageID varchar(5)
+
+As
+BEGIN
+   if not exists (select * from FBNPC_Gallery_Master where GalleryID=@GalleryID) 
+   begin
+insert into FBNPC_Gallery_Master (GalleryID,Name,GalleryType,Category,CompanyName,Description,fileName,FileType,FileData,CreatedBy,CreatedDate,ModifyBy,ModifyDate,IsActive)
+values(@GalleryID,@Name,@GalleryType,@category,@CompanyName,@Desc,@fileName,@fileType,@FileData,@CreatedBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:30'),@ModifyBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:30'),@isactive)
+end
+else
+begin
+ if (@imageID='1') 
+ begin
+ update FBNPC_Gallery_Master set name=@name,companyname=@companyname,description=@desc,filename=@filename,filetype=@filetype,filedata=@filedata,isactive=@isactive,modifyBy=@ModifyBy,modifydate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:30') where GalleryID=@GalleryID
+ end
+ else
+ begin
+  update FBNPC_Gallery_Master set name=@name,companyname=@companyname,description=@desc,isactive=@isactive,modifyBy=@ModifyBy,modifydate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:30') where GalleryID=@GalleryID
+
+end
+END
+end "
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_GalleryImage_Insert", strProcedureBody)
+
+            strProcedureBody = " @AchieverID varchar(20),@FirstName varchar(30),@LastName varchar(30),@City varchar(30),@Country varchar(30),@OnLandingPage integer,@Desc varchar(max),@ISActive varchar(10),@FileName varchar(50),@FileType varchar(50),@FileData varbinary(max),@ModifyBy varchar(30),@CreatedBy varchar(30),@ImageID varchar(5),@State varchar(20),@DocType varchar(30)
+As BEGIN if not exists (select * from KSCN_Achiever_Master where AchieverID=@AchieverID) 
+   begin
+insert into KSCN_Achiever_Master (AchieverID,FirstName,LastName,City,Country,OnLandingPage,Description,Isactive,fileName,FileType,FileData,CreatedBy,CreatedDate,ModifyBy,ModifyDate,State,DocType)
+values(@AchieverID,@FirstName,@LastName,@City,@Country,@OnLandingPage,@Desc,@isactive,@fileName,@fileType,@FileData,@CreatedBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),@ModifyBy,SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00'),@State,@DocType)
+end
+else
+begin
+ if (@imageID='1') 
+ begin
+ update KSCN_Achiever_Master set Firstname=@Firstname,Lastname=@Lastname,OnLandingPage=@OnLandingPage,description=@desc,Country=@Country,State=@State,City=@City,filename=@filename,filetype=@filetype,filedata=@filedata,isactive=@isactive,modifyBy=@ModifyBy,modifydate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00') where AchieverID=@AchieverID
+ end
+ else
+ begin
+  update KSCN_Achiever_Master set Firstname=@Firstname,Lastname=@Lastname,OnLandingPage=@OnLandingPage,description=@desc,Country=@Country,State=@State,City=@City,isactive=@isactive,modifyBy=@ModifyBy,modifydate=SWITCHOFFSET(SYSDATETIMEOFFSET(), '-06:00') where AchieverID=@AchieverID
+
+end
+END
+end "
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_AchieverImage_Insert", strProcedureBody)
+
+#Region "Next / Previous"
+            strProcedureBody = "@ID varchar(30),@StudentName varchar(20),@QusNo integer as select * from (select distinct FBNPC_QustionsSheet.*,ROW_NUMBER() OVER (ORDER BY (FBNPC_QustionsSheet.questionid)) as  num,FBNPC_PAPER_SET_DETAIL.avid,FBNPC_PAPER_SET_DETAIL.paperid,case when KSCN_Temp_Table_Exam.optionA=1 then 1 else case when KSCN_Temp_Table_Exam.optionb=1 then 2 else case when  KSCN_Temp_Table_Exam.optionC=1 then 3 else case when  KSCN_Temp_Table_Exam.optionD=1 then 4 else 0 end end end end as UserAns from FBNPC_QustionsSheet inner join FBNPC_PAPER_SET_DETAIL on FBNPC_PAPER_SET_DETAIL.QuestionID=FBNPC_QustionsSheet.QuestionID 
+left join KSCN_Temp_Table_Exam on KSCN_Temp_Table_Exam.QuestionID=FBNPC_QustionsSheet.QuestionID
+where FBNPC_PAPER_SET_DETAIL.examid=@ID and FBNPC_PAPER_SET_DETAIL.PaperID not in (select PaperId from FBNPC_Exam_Question_Validtion where StudentName=@StudentName))final where 2=2 
+and num=@QusNo-1 "
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_Show_Individual_Sheet_Question_Previous", strProcedureBody)
+
+            strProcedureBody = "@ID varchar(30),@StudentName varchar(20),@QusNo integer as select * from (select distinct FBNPC_QustionsSheet.*,ROW_NUMBER() OVER (ORDER BY (FBNPC_QustionsSheet.questionid)) as  num,FBNPC_PAPER_SET_DETAIL.avid,FBNPC_PAPER_SET_DETAIL.paperid,case when KSCN_Temp_Table_Exam.optionA=1 then 1 else case when KSCN_Temp_Table_Exam.optionb=1 then 2 else case when  KSCN_Temp_Table_Exam.optionC=1 then 3 else case when  KSCN_Temp_Table_Exam.optionD=1 then 4 else 0 end end end end as UserAns from FBNPC_QustionsSheet inner join FBNPC_PAPER_SET_DETAIL on FBNPC_PAPER_SET_DETAIL.QuestionID=FBNPC_QustionsSheet.QuestionID 
+left join KSCN_Temp_Table_Exam on KSCN_Temp_Table_Exam.QuestionID=FBNPC_QustionsSheet.QuestionID
+where FBNPC_PAPER_SET_DETAIL.examid=@ID and FBNPC_PAPER_SET_DETAIL.PaperID not in (select PaperId from FBNPC_Exam_Question_Validtion where StudentName=@StudentName))final where 2=2 
+and num=@QusNo+1 "
+            clsCommonFunctionality.CreateStoreProcedure("FBNPC_Show_Individual_Sheet_Question_Next", strProcedureBody)
+
+            strProcedureBody = "@ExamID varchar(30),@StudentID varchar(20) as select * from KSCN_Temp_Table_Exam where examname=@ExamID and Studentname=@StudentID"
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Temp_To_Orignal_Show", strProcedureBody)
+
+            strProcedureBody = "@ExamID varchar(30),@StudentID varchar(20),@PaperID varchar(20) as delete from KSCN_Temp_Table_Exam where examname=@ExamID and Studentname=@StudentID and PaperID=@PaperID"
+            clsCommonFunctionality.CreateStoreProcedure("KSCN_Temp_Delete", strProcedureBody)
+#End Region
+
 
             clsCommon.ProgressBarHide()
         Catch ex As Exception

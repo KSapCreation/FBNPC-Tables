@@ -522,6 +522,8 @@ Public Class clsCreateAllTables
             coll.Add("CreatedDate", "datetime null")
             coll.Add("ModifyBy", "Varchar(50) null")
             coll.Add("ModifyDate", "datetime null")
+            coll.Add("State", "varchar(30) null")
+            coll.Add("DocType", "varchar(30) not null default 'Achiever'")
             clsCommonFunctionality.CreateOrAlterTable("KSCN_Achiever_Master", coll)
 
             coll = New Dictionary(Of String, String)()
@@ -543,6 +545,21 @@ Public Class clsCreateAllTables
             clsCommonFunctionality.CreateOrAlterTable("KSCN_City_Master", coll)
 
             '  ExecuteAfterCreateTable()
+
+            coll = New Dictionary(Of String, String)()
+            coll.Add("QuestionID", "Varchar(12) not null")
+            coll.Add("OptionA", "integer not null default 0")
+            coll.Add("OptionB", "integer not null default 0")
+            coll.Add("OptionC", "integer not null default 0")
+            coll.Add("OptionD", "integer not null default 0")
+            coll.Add("ExamName", "Varchar(12)  not null references FBNPC_ExamListName(ExamID)")
+            coll.Add("StudentName", "Varchar(30) null")
+            coll.Add("PaperID", "VARCHAR(30) not null REFERENCES FBNPC_Paper_Set_Head(PaperID)")
+            coll.Add("CreatedDate", "datetime null")
+            coll.Add("ModifyDate", "datetime null")
+            coll.Add("DocType", "varchar(20) null ")
+            coll.Add("QusNo", "varchar(20) null ")
+            clsCommonFunctionality.CreateOrAlterTable("KSCN_Temp_Table_Exam", coll)
 
             clsCommon.ProgressBarPercentHide()
 
