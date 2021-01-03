@@ -1,4 +1,4 @@
-﻿'=================BM00000007858===============
+﻿
 Imports common
 Public Class clsAllStoreProcedure
     Public Shared Sub CreateAllStoreProcedure()
@@ -261,7 +261,7 @@ Public Class clsAllStoreProcedure
             strProcedureBody = "@ID varchar(30),@ExamID varchar(20) as select distinct FBNPC_QustionsSheet.*,'' num,FBNPC_PAPER_SET_DETAIL.avid,FBNPC_PAPER_SET_DETAIL.paperid from FBNPC_QustionsSheet inner join FBNPC_PAPER_SET_DETAIL on FBNPC_PAPER_SET_DETAIL.QuestionID=FBNPC_QustionsSheet.QuestionID where AVID=@ID  and FBNPC_PAPER_SET_DETAIL.examid=@ExamID "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Show_Listening_Sheet", strProcedureBody)
 
-            strProcedureBody = "@ID varchar(30),@ExamID varchar(20) as select distinct FBNPC_QustionsSheet.*,ROW_NUMBER() OVER (ORDER BY (FBNPC_QustionsSheet.questionid)) as  num,FBNPC_PAPER_SET_DETAIL.avid,FBNPC_PAPER_SET_DETAIL.paperid from FBNPC_QustionsSheet inner join FBNPC_PAPER_SET_DETAIL on FBNPC_PAPER_SET_DETAIL.QuestionID=FBNPC_QustionsSheet.QuestionID where FBNPC_QustionsSheet.questionid=@ID and FBNPC_PAPER_SET_DETAIL.examid=@ExamID "
+            strProcedureBody = "@ID varchar(30),@ExamID varchar(20) as select distinct FBNPC_QustionsSheet.*,ROW_NUMBER() OVER (ORDER BY (FBNPC_QustionsSheet.questionid)) as  num,FBNPC_PAPER_SET_DETAIL.avid,FBNPC_PAPER_SET_DETAIL.paperid,case when KSCN_Temp_Table_Exam.optionA=1 then 1 else case when KSCN_Temp_Table_Exam.optionb=1 then 2 else case when  KSCN_Temp_Table_Exam.optionC=1 then 3 else case when  KSCN_Temp_Table_Exam.optionD=1 then 4 else 0 end end end end as UserAns from FBNPC_QustionsSheet inner join FBNPC_PAPER_SET_DETAIL on FBNPC_PAPER_SET_DETAIL.QuestionID=FBNPC_QustionsSheet.QuestionID left join KSCN_Temp_Table_Exam on KSCN_Temp_Table_Exam.QuestionID=FBNPC_QustionsSheet.QuestionID where FBNPC_QustionsSheet.questionid=@ID and FBNPC_PAPER_SET_DETAIL.examid=@ExamID "
             clsCommonFunctionality.CreateStoreProcedure("FBNPC_Show_Individual_Sheet_Question", strProcedureBody)
 
             strProcedureBody = "@ID varchar(30),@StudentName varchar(20) as select distinct FBNPC_QustionsSheet.*,ROW_NUMBER() OVER (ORDER BY (FBNPC_QustionsSheet.questionid)) as  num,FBNPC_PAPER_SET_DETAIL.avid,FBNPC_PAPER_SET_DETAIL.paperid from FBNPC_QustionsSheet inner join FBNPC_PAPER_SET_DETAIL on FBNPC_PAPER_SET_DETAIL.QuestionID=FBNPC_QustionsSheet.QuestionID 
